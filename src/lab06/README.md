@@ -1,31 +1,35 @@
-# ЛР-6 — Generics и typing
+# ЛР-6 — Generics и Protocol
 
-## 1. Цель работы
+Здесь добавляем системе типизацию: классы аннотированы, коллекция
+параметризуется типом, плюс делаем интерфейсы через `Protocol` —
+без всякого наследования.
 
-- Освоить аннотации типов (`typing`) и расставить их в существующем коде.
-- Создать обобщённый (generic) контейнер с `TypeVar` и `Generic`.
-- Понять структурную типизацию через `typing.Protocol`.
+## Что в папке
 
-## 2. Описание реализованных типов и контейнеров
+- `model.py` — иерархия счетов с полными аннотациями типов
+- `container.py` — `TypedCollection[T]` и два протокола (`Displayable`, `Scorable`)
+- `demo.py`, `README.md`
 
-### Аннотации типов в модели
-
-В `model.py` все классы и методы аннотированы — параметры конструктора,
-возвращаемые значения, типы атрибутов в `__init__`. Например:
-
-```python
-class BankAccount:
-    bank_name: str = "z-bank_ZOV_GOYDA"
-
-    def __init__(self, account_number: str, holder_name: str,
-                 balance: float = 0.0, interest_rate: float = 0.0) -> None:
-        self._account_number: str = ...
-        ...
+```
+cd src/lab06
+python3 demo.py
 ```
 
-### `TypedCollection[T]` (`container.py`)
+## Аннотации типов
 
-Generic-контейнер, типизированный параметром `T`:
+В `model.py` всё типизировано — параметры конструктора, возвращаемые
+значения, поля в `__init__`. Например:
+
+```python
+def __init__(self, account_number: str, holder_name: str,
+             balance: float = 0.0, interest_rate: float = 0.0) -> None:
+    self._balance: float = _validate_money(balance, "Баланс")
+```
+
+Сам Python в рантайме типы не проверяет, но IDE и `mypy` их видят —
+кода становится меньше шанс что-то напутать.
+
+## TypedCollection[T]
 
 ```python
 T = TypeVar("T")
@@ -33,24 +37,27 @@ T = TypeVar("T")
 class TypedCollection(Generic[T]):
     def __init__(self) -> None:
         self._items: list[T] = []
+    def add(self, item: T) -> None: ...
 ```
 
-Реализованы методы:
+Контейнер, который знает, что внутри. `TypedCollection[BankAccount]` —
+коллекция конкретно `BankAccount`-ов. Если попытаться положить туда
+строку — `mypy` ругнётся.
 
-| Метод                                                  | Сигнатура                                |
-| ------------------------------------------------------ | ---------------------------------------- |
-| `add(item)`, `remove(item)`, `get_all()`               | базовая работа с `T`                     |
-| `__len__`, `__iter__`, `__getitem__`, `__contains__`   | стандартные dunder-ы                     |
-| `find(predicate) -> Optional[T]`                       | первый подходящий или `None`             |
-| `filter(predicate) -> list[T]`                         | все подходящие                           |
-| `map(transform) -> list[R]`                            | преобразование с другим TypeVar `R`      |
+Помимо базовых методов (`add`, `remove`, `get_all`, `__iter__`,
+`__getitem__`) есть `find`, `filter` и **`map`**:
 
-Второй TypeVar `R` нужен в `map`, потому что результат преобразования
-может быть любого типа. Из `TypedCollection[BankAccount]` через
-`map(lambda a: a.holder_name)` получаем `list[str]`, через
+```python
+R = TypeVar("R")
+def map(self, transform: Callable[[T], R]) -> list[R]: ...
+```
+
+Тут второй `TypeVar R` — потому что результат преобразования может
+быть совсем другого типа. Из `TypedCollection[BankAccount]` через
+`map(lambda a: a.holder_name)` получим `list[str]`, через
 `map(lambda a: a.balance)` — `list[float]`.
 
-### Protocol-ы (`container.py`)
+## Protocol — интерфейс без наследования
 
 ```python
 @runtime_checkable
@@ -62,69 +69,51 @@ class Scorable(Protocol):
     def score(self) -> float: ...
 ```
 
-`@runtime_checkable` нужен, чтобы работало `isinstance(obj, Displayable)`
-в рантайме. Без него `Protocol` проверяется только статически (`mypy`).
-
 Классы `BankAccount` / `CreditAccount` / `DepositAccount` **не
-наследуются** от `Displayable` или `Scorable`. У них просто есть методы
-`display()` и `score()`. Этого достаточно — структурная типизация
-сравнивает по интерфейсу, а не по родословной.
+наследуются** от этих протоколов. У них просто есть методы `display()`
+и `score()`. Этого достаточно — `Protocol` проверяет совместимость
+по форме объекта, а не по родословной (это и есть «утиная типизация»).
 
-Реализация `score()` у разных классов:
+`@runtime_checkable` нужен, чтоб работала проверка
+`isinstance(obj, Displayable)` в рантайме.
 
-| Класс            | `score()` возвращает                                       |
-| ---------------- | ---------------------------------------------------------- |
-| `BankAccount`    | `balance`                                                  |
-| `CreditAccount`  | `balance - debt` (реальная чистая стоимость, может быть < 0) |
-| `DepositAccount` | `balance` плюс прогноз процентов до конца срока            |
+`score()` у каждого класса считается по-своему: у `BankAccount` —
+просто баланс; у `CreditAccount` — `balance - debt` (может уйти в
+минус); у `DepositAccount` — баланс плюс прогноз процентов.
 
-### TypeVar с ограничением
+## TypeVar с bound
 
 ```python
 D = TypeVar("D", bound=Displayable)
-S = TypeVar("S", bound=Scorable)
 ```
 
-Теперь `TypedCollection[D]` — это коллекция не «чего угодно», а только
-тех объектов, у которых есть метод `display()`. Внутри коллекции (и в
-коде, который её использует) можно безопасно вызывать `item.display()`.
+«Какой угодно тип, лишь бы он был `Displayable`». Внутри
+`TypedCollection[D]` можно смело дёргать `item.display()` — IDE и
+`mypy` знают, что метод там есть.
 
-## 3. Демонстрация работы
+## Что в `demo.py`
 
-В `demo.py` три сценария.
+1. **`TypedCollection[BankAccount]`** — `find` (один раз нашли, один
+   раз `None`), `filter` (отфильтрованный список), `map` дважды с
+   разными функциями: получается `list[str]` и `list[float]`. Видно,
+   зачем второй TypeVar.
+2. **`TypedCollection[Displayable]`** — кладём туда счета разных
+   типов. `isinstance(obj, Displayable) == True` для всех, хотя
+   никто не наследовался. В цикле дёргаем `display()` — у каждого
+   свой формат.
+3. **`TypedCollection[Scorable]`** — тот же класс контейнера,
+   но с другим протоколом. Сортируем по `score()` — у каждого
+   класса своя метрика, поэтому порядок логичный.
 
-**Сценарий 1.** `TypedCollection[BankAccount]`. Показаны базовые
-операции, плюс:
-- `find()` — один раз нашли, один раз получили `None`;
-- `filter()` — отфильтрованный список;
-- `map()` дважды с разными функциями: `list[str]` (имена) и `list[float]`
-  (балансы) — наглядно видно, зачем второй TypeVar `R`.
-
-**Сценарий 2.** `TypedCollection[Displayable]` с объектами разных
-типов из иерархии. Видно, что:
-- классы `BankAccount`, `CreditAccount`, `DepositAccount` **не
-  наследуются** от `Displayable`, но `isinstance(obj, Displayable) == True`
-  для каждого;
-- единый цикл вызывает `item.display()` для всех — у каждого свой формат.
-
-**Сценарий 3.** Тот же `TypedCollection`, но параметризован
-протоколом `Scorable`. `score()` считается по-разному в каждом классе,
-и коллекция сортируется по этому методу. Видно, что один и тот же
-generic-контейнер работает с разными ограничениями.
+## Скриншот
 
 ![Вывод demo.py](../../images/lab06/demo.png)
 
-## 4. Вывод
+## Что вынес
 
-- Аннотации типов делают код документированным «бесплатно»: видно, что
-  принимает функция и что возвращает, без чтения тела.
-- `Generic[T]` + `TypeVar` дают переиспользуемый контейнер, который
-  работает с любым типом, но при этом сохраняет типобезопасность.
-- Второй TypeVar (`R` в `map`) нужен, когда тип результата отличается
-  от типа исходных элементов.
-- `Protocol` решает классическую проблему наследования: не надо тащить
-  чужой класс в иерархию, чтобы реализовать «интерфейс». Достаточно
-  просто иметь нужный метод. Это структурная типизация в чистом виде.
-- Связка `TypeVar(bound=Protocol)` — самое мощное средство:
-  generic-контейнер с гарантией, что внутри лежат объекты с конкретными
-  методами.
+`Generic[T] + TypeVar` дают переиспользуемый контейнер с
+типобезопасностью. Второй `TypeVar` (`R`) нужен, когда тип результата
+отличается от исходного. `Protocol` развязывает интерфейс от
+наследования — достаточно иметь нужный метод. А связка
+`TypeVar(bound=Protocol)` — самое мощное: generic-контейнер с
+гарантией, что внутри лежат объекты с конкретными методами.
