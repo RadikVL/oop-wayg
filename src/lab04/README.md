@@ -86,9 +86,4 @@ class Comparable(ABC):
 который забыл реализовать `to_string()`, не создаётся — Python кидает
 `TypeError` уже при `__init__`. Это и есть смысл «контракта».
 
-> Скриншоты — в `images/lab04/`.
-
-![Сценарий 1](../../images/lab04/scenario1.png)
-![Сценарий 2](../../images/lab04/scenario2.png)
-![Сценарий 3](../../images/lab04/scenario3.png)
-![Сценарий 4](../../images/lab04/scenario4.png)
+![Вывод demo.py](../../images/lab04/demo.png)

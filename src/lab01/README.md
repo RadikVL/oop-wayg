@@ -160,12 +160,6 @@ python3 demo.py
 
 ---
 
-## Скриншоты работы `demo.py`
+## Скриншот работы `demo.py`
 
-> Скриншоты лежат в `images/lab01/`.
-
-![Сценарий 1 — базовые операции](../../images/lab01/scenario1.png)
-
-![Сценарий 2 — состояние счёта](../../images/lab01/scenario2.png)
-
-![Сценарий 3 — валидация](../../images/lab01/scenario3.png)
+![Вывод demo.py](../../images/lab01/demo.png)

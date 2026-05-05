@@ -86,11 +86,7 @@ book.filter_by(is_active).sort_by(by_balance).apply(InterestStrategy(2))
 «взаимозаменяемая стратегия». В конце — `DiscountStrategy` вызывается
 как функция (`__call__`).
 
-> Скриншоты — в `images/lab05/`.
-
-![Сценарий 1](../../images/lab05/scenario1.png)
-![Сценарий 2](../../images/lab05/scenario2.png)
-![Сценарий 3](../../images/lab05/scenario3.png)
+![Вывод demo.py](../../images/lab05/demo.png)
 
 ## 4. Вывод
 

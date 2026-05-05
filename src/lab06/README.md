@@ -112,11 +112,7 @@ S = TypeVar("S", bound=Scorable)
 и коллекция сортируется по этому методу. Видно, что один и тот же
 generic-контейнер работает с разными ограничениями.
 
-> Скриншоты — в `images/lab06/`.
-
-![Сценарий 1](../../images/lab06/scenario1.png)
-![Сценарий 2](../../images/lab06/scenario2.png)
-![Сценарий 3](../../images/lab06/scenario3.png)
+![Вывод demo.py](../../images/lab06/demo.png)
 
 ## 4. Вывод
 

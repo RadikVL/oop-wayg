@@ -68,11 +68,7 @@ BankAccount (base.py)
 и `get_only_deposit()`. В конце — таблица проверок `isinstance`,
 показывающая, что иерархия выстроена корректно.
 
-> Скриншоты — в `images/lab03/`.
-
-![Сценарий 1](../../images/lab03/scenario1.png)
-![Сценарий 2](../../images/lab03/scenario2.png)
-![Сценарий 3](../../images/lab03/scenario3.png)
+![Вывод demo.py](../../images/lab03/demo.png)
 
 ## 4. Вывод
 
