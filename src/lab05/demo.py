@@ -150,6 +150,10 @@ def main():
     print(f"  после: {one_account.balance:.2f}")
     print(f"  repr:  {cut!r}")
 
+    af = [1, 2, 3]
+    af = list(filter(lambda x: x > 1, af))  # коллекция может быть любой, если у неё есть нужные методы
+    print(af)
+    
 
 if __name__ == "__main__":
     main()

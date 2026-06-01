@@ -21,10 +21,13 @@
 │   │   ├── interfaces.py, models.py, collection.py, demo.py, README.md
 │   ├── lab05/                     # ЛР-5 — стратегии и функции высшего порядка
 │   │   ├── model.py, strategies.py, collection.py, demo.py, README.md
-│   └── lab06/                     # ЛР-6 — Generics и Protocol
-│       ├── model.py, container.py, demo.py, README.md
+│   ├── lab06/                     # ЛР-6 — Generics и Protocol
+│   │   ├── model.py, container.py, demo.py, README.md
+│   └── lab07/                     # ЛР-7 — Консольное приложение (CLI + слои + JSON)
+│       ├── main.py, cli.py, app.py, models.py, container.py,
+│       ├── exceptions.py, storage.py, README.md
 └── images/
-    ├── lab01/ ... lab06/          # скриншоты к отчётам
+    ├── lab01/ ... lab07/          # скриншоты к отчётам
 ```
 
 ## Список лабораторных
@@ -37,6 +40,7 @@
 | 4 | Интерфейсы и абстрактные классы (ABC)      | `src/lab04/`  |
 | 5 | Функции как аргументы. Паттерн «Стратегия» | `src/lab05/`  |
 | 6 | Generics и `typing.Protocol`               | `src/lab06/`  |
+| 7 | Консольное приложение (CLI + слои + JSON)  | `src/lab07/`  |
 
 Каждая лаба — самодостаточна: со своими копиями `model.py` и т.п.,
 никаких хитрых импортов между папками. Можно запустить любую,
